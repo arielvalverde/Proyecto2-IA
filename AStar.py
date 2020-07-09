@@ -25,9 +25,7 @@ grafo = {"Oradea":{"Zerind":(71,6,4),"Sibiu":(151,6,3)},
        "Iasi":{"Vaslui":(92,7,4),"Neamt":(87,5,3)},
        "Neamt":{"Iasi":(87,5,3)}
        }      
-
-
-                
+       
 class Nodo:
     def __init__(self, nombre="", padre=""):
         self.nombre = nombre
@@ -66,13 +64,13 @@ def algoritmo(inicio, fin):
             ruta.reverse()
             return ruta
 
-        vecinos = grafo[nodo_actual.nombre]
+        vecinos = grafo.get(nodo_actual.nombre)
         for key, value in vecinos.items():
             vecino = Nodo(key, nodo_actual)
 
             if(vecino in nodos_cerrados):
                 continue
-            vecino.g = nodo_actual.g + calcular_peso(grafo.get(nodo_actual.nombre).get(vecino.nombre))
+            vecino.g = nodo_actual.g + costo_entre_nodos(grafo.get(nodo_actual.nombre).get(vecino.nombre))
             vecino.h = heuristica(vecino.nombre)
             vecino.f = vecino.g + vecino.h
 
@@ -81,7 +79,7 @@ def algoritmo(inicio, fin):
 
     return None
 
-def calcular_peso(argumentos):
+def costo_entre_nodos(argumentos):
     distancia = argumentos[0]
     carretera = (argumentos[1]*220)/10
     peligro = argumentos[2]    
