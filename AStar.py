@@ -1,192 +1,110 @@
-class Graph:
+distancias_bucarest = {'Arad':366,'Bucarest':0,'Craiova':160,'Dobreta':242,
+                       'Eforie':161,'Fagaras':176,'Giorgiu':77,'Hirsova':151,
+                       'Iasi':226,'Lugoj':244,'Mehadia':241,'Neamt':234,
+                       'Oradea':380,'Pitesti':100,'Rimnicu Vilcea':193,'Sibiu':253,
+                       'Timisoara':329,'Urziceni':80,'Vaslui':199,'Zerind':374}
 
-    # Initialize the class
-    def __init__(self, graph_dict=None, directed=True):
-        self.graph_dict = graph_dict or {}
-        self.directed = directed
-        if not directed:
-            self.make_undirected()
+grafo = {"Oradea":{"Zerind":(71,6,4),"Sibiu":(151,6,3)},
+       "Zerind":{"Oradea":(71,6,4),"Arad":(75,6,5)},
+       "Arad":{"Zerind":(75,6,5),"Sibiu":(140,5,4),"Timisoara":(118,5,3)},
+       "Sibiu":{"Oradea":(151,6,3),"Arad":(140,5,4),"Fagaras":(99,7,2),"Rimnicu Vilcea":(80,6,2)},
+       "Timisoara":{"Arad":(118,5,3),"Lugoj":(111,6,3)},
+       "Lugoj":{"Timisoara":(111,6,3),"Mehadia":(70,4,4)},
+       "Mehadia":{"Lugoj":(70,4,4),"Dobreta":(75,4,3)},
+       "Dobreta":{"Mehadia":(75,4,3),"Craiova":(120,7,3)},
+       "Craiova":{"Dobreta":(120,7,3),"Rimnicu Vilcea":(146,8,1),"Pitesti":(138,6,4)},
+       "Rimnicu Vilcea":{"Sibiu":(80,6,2),"Craiova":(146,8,1),"Pitesti":(97,7,2)},
+       "Pitesti":{"Craiova":(138,6,4),"Rimnicu Vilcea":(97,7,2),"Bucarest":(101,8,1)},
+       "Fagaras":{"Sibiu":(99,7,2),"Bucarest":(211,8,3)},
+       "Bucarest":{"Fagaras":(211,8,3),"Pitesti":(101,8,1),"Giorgiu":(90,8,1),"Urziceni":(85,9,2)},
+       "Giorgiu":{"Bucarest":(90,8,1)},
+       "Urziceni":{"Bucarest":(85,9,2),"Hirsova":(98,7,4),"Vaslui":(142,5,2)},
+       "Hirsova":{"Urziceni":(98,7,4),"Eforie":(86,7,3)},
+       "Eforie":{"Hirsova":(86,7,3)},
+       "Vaslui":{"Urziceni":(142,5,2),"Iasi":(92,7,4)},
+       "Iasi":{"Vaslui":(92,7,4),"Neamt":(87,5,3)},
+       "Neamt":{"Iasi":(87,5,3)}
+       }      
 
-    # Create an undirected graph by adding symmetric edges
-    def make_undirected(self):
-        for a in list(self.graph_dict.keys()):
-            for (b, dist) in self.graph_dict[a].items():
-                self.graph_dict.setdefault(b, {})[a] = dist
 
-    # Add a link from A and B of given distance, and also add the inverse link if the graph is undirected
-    def connect(self, A, B, distance=1):
-        self.graph_dict.setdefault(A, {})[B] = distance
-        if not self.directed:
-            self.graph_dict.setdefault(B, {})[A] = distance
+                
+class Nodo:
+    def __init__(self, nombre="", padre=""):
+        self.nombre = nombre
+        self.padre = padre
+        self.g = 0 
+        self.h = 0
+        self.f = 0 
 
-    # Get neighbors or a neighbor
-    def get(self, a, b=None):
-        links = self.graph_dict.setdefault(a, {})
-        if b is None:
-            return links
-        else:
-            return links.get(b)
+    def __eq__(self, nodo):
+        return self.nombre == nodo.nombre
 
-    # Return a list of nodes in the graph
-    def nodes(self):
-        s1 = set([k for k in self.graph_dict.keys()])
-        s2 = set([k2 for v in self.graph_dict.values() for k2, v2 in v.items()])
-        nodes = s1.union(s2)
-        return list(nodes)
+    def __lt__(self, nodo):
+         return self.f < nodo.f
 
-# This class represent a node
-class Node:
 
-    # Initialize the class
-    def __init__(self, name:str, parent:str):
-        self.name = name
-        self.parent = parent
-        self.g = 0 # Distance to start node
-        self.h = 0 # Distance to goal node
-        self.f = 0 # Total cost
-
-    # Compare nodes
-    def __eq__(self, other):
-        return self.name == other.name
-
-    # Sort nodes
-    def __lt__(self, other):
-         return self.f < other.f
-
-    # Print node
-    def __repr__(self):
-        return ('({0},{1})'.format(self.position, self.f))
-
-# A* search
-def astar_search(graph, heuristics, start, end):
+def algoritmo(inicio, fin):
     
-    # Create lists for open nodes and closed nodes
-    open = []
-    closed = []
+    nodos_abiertos = []
+    nodos_cerrados = []
 
-    # Create a start node and an goal node
-    start_node = Node(start, None)
-    goal_node = Node(end, None)
-
-    # Add the start node
-    open.append(start_node)
+    nodo_inicial = Nodo(inicio, None)
+    nodo_final = Nodo(fin, None)
+    nodos_abiertos.append(nodo_inicial)
     
-    # Loop until the open list is empty
-    while len(open) > 0:
+    while len(nodos_abiertos) > 0:
+        nodos_abiertos.sort()
+        nodo_actual = nodos_abiertos.pop(0)
+        nodos_cerrados.append(nodo_actual)
 
-        # Sort the open list to get the node with the lowest cost first
-        open.sort()
+        if nodo_actual == nodo_final:
+            ruta = []
+            while nodo_actual != nodo_inicial:
+                ruta.append(nodo_actual.nombre)
+                nodo_actual = nodo_actual.padre
+            ruta.append(nodo_inicial.nombre)
+            ruta.reverse()
+            return ruta
 
-        # Get the node with the lowest cost
-        current_node = open.pop(0)
+        vecinos = grafo[nodo_actual.nombre]
+        for key, value in vecinos.items():
+            vecino = Nodo(key, nodo_actual)
 
-        # Add the current node to the closed list
-        closed.append(current_node)
-        
-        # Check if we have reached the goal, return the path
-        if current_node == goal_node:
-            path = []
-            while current_node != start_node:
-                path.append(current_node.name + ': ' + str(current_node.g))
-                current_node = current_node.parent
-            path.append(start_node.name + ': ' + str(start_node.g))
-            # Return reversed path
-            return path[::-1]
-
-        # Get neighbours
-        neighbors = graph.get(current_node.name)
-
-        # Loop neighbors
-        for key, value in neighbors.items():
-
-            # Create a neighbor node
-            neighbor = Node(key, current_node)
-
-            # Check if the neighbor is in the closed list
-            if(neighbor in closed):
+            if(vecino in nodos_cerrados):
                 continue
+            vecino.g = nodo_actual.g + calcular_peso(grafo.get(nodo_actual.nombre).get(vecino.nombre))
+            vecino.h = heuristica(vecino.nombre)
+            vecino.f = vecino.g + vecino.h
 
-            # Calculate full path cost
-            neighbor.g = current_node.g + graph.get(current_node.name, neighbor.name)
-            neighbor.h = heuristics.get(neighbor.name)
-            neighbor.f = neighbor.g + neighbor.h
+            if(agregar_abiertos(nodos_abiertos, vecino) == True):
+                nodos_abiertos.append(vecino)
 
-            # Check if neighbor is in open list and if it has a lower f value
-            if(add_to_open(open, neighbor) == True):
-                # Everything is green, add neighbor to open list
-                open.append(neighbor)
-
-    # Return None, no path is found
     return None
 
-# Check if a neighbor should be added to open list
-def add_to_open(open, neighbor):
-    for node in open:
-        if (neighbor == node and neighbor.f > node.f):
+def calcular_peso(argumentos):
+    distancia = argumentos[0]
+    carretera = (argumentos[1]*220)/10
+    peligro = argumentos[2]    
+    return ((2/3)*distancia - (1/3)*carretera) * peligro
+
+def heuristica(ciudad):
+    ciudades = grafo[ciudad]
+    suma = 0
+    for nombre_ciudad in list(ciudades):
+        suma += ciudades[nombre_ciudad][2]
+        
+    promedio_peligro = (suma/len(ciudades))
+    
+    return distancias_bucarest[ciudad] * promedio_peligro
+    
+def agregar_abiertos(nodos_abiertos, vecino):
+    for nodo in nodos_abiertos:
+        if (vecino == nodo and vecino.f > nodo.f):
             return False
     return True
 
-# The main entry point for this module
 def main():
+    ruta = algoritmo('Craiova', 'Bucarest')
+    print(ruta)
 
-     # Create a graph
-    graph = Graph()
-
-    graph.connect('Oradea', 'Zerind', 71)
-    graph.connect('Oradea', 'Sibiu', 151)
-    graph.connect('Zerind', 'Arad', 75)
-    graph.connect('Arad', 'Timisoara', 118)
-    graph.connect('Arad', 'Sibiu', 140)
-    graph.connect('Timisoara', 'Lugoj', 111)
-    graph.connect('Lugoj', 'Mehadia', 70)
-    graph.connect('Mehadia', 'Dobreta', 75)
-    graph.connect('Dobreta', 'Craiova', 120)
-    graph.connect('Craiova', 'Pitesti', 138)
-    graph.connect('Craiova', 'Vilcea', 146)
-    graph.connect('Sibiu', 'Fagaras', 99)
-    graph.connect('Sibiu', 'Vilcea', 80)
-    graph.connect('Fagaras', 'Bucharest', 211)
-    graph.connect('Pitesti', 'Bucharest', 101)
-    graph.connect('Giurgiu', 'Bucharest', 90)
-    graph.connect('Bucharest', 'Urziceni', 85)
-    graph.connect('Urziceni', 'Hirsova', 98)
-    graph.connect('Urziceni', 'Vaslui', 142)
-    graph.connect('Vilcea', 'Pitesti', 97)
-    graph.connect('Vaslui', 'Iasi', 92)
-    graph.connect('Iasi', 'Neamt', 87)
-    graph.connect('Hirsova', 'Eforie', 86)
-
-
-    # Make graph undirected, create symmetric connections
-    graph.make_undirected()
-
-    # Create heuristics (straight-line distance, air-travel distance)
-    heuristics = {}
-    heuristics['Arad'] = 366
-    heuristics['Bucharest'] = 0
-    heuristics['Craiova'] = 160
-    heuristics['Dobreta'] = 242
-    heuristics['Eforie'] = 161
-    heuristics['Fagaras'] = 176
-    heuristics['Giorgiu'] = 77
-    heuristics['Hirsova'] = 151
-    heuristics['Iasi'] = 226
-    heuristics['Lugoj'] = 244
-    heuristics['Mehadia'] = 241
-    heuristics['Neamt'] = 234
-    heuristics['Oradea'] = 380
-    heuristics['Pitesti'] = 100
-    heuristics['Vilcea'] = 193
-    heuristics['Sibiu'] = 253
-    heuristics['Timisoara'] = 329
-    heuristics['Urziceni'] = 80
-    heuristics['Vaslui'] = 199
-    heuristics['Zerind'] = 374
-
-    # Run the search algorithm
-    path = astar_search(graph, heuristics, 'Timisoara', 'Bucharest')
-    print(path)
-    print()
-
-# Tell python to run main method
 if __name__ == "__main__": main()
