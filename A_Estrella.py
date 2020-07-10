@@ -36,6 +36,7 @@ grafo = {"Oradea":{"Zerind":(71,6,4),"Sibiu":(151,6,3)},
        "Neamt":{"Iasi":(87,5,3)}
        }      
 
+# ------- Implementacion A* --------------------------
 
 class Nodo:
     def __init__(self, nombre="", padre=""):
@@ -111,19 +112,22 @@ def agregar_abiertos(nodos_abiertos, vecino):
         if (vecino == nodo and vecino.f > nodo.f):
             return False
     return True
-def mensaje(gameDisplay):
+
+
+# ------- Interfaz Grafica --------------------------
+
+def mensaje(ventana):
     font = pygame.font.Font("freesansbold.ttf", 26)  
     text = font.render("Seleccione el punto de partida hacia Bucharest", 1, (0, 0, 0))
-    gameDisplay.blit(text, (80,20))
+    ventana.blit(text, (80,20))
     
-    
-def drawCircle(gameDisplay,pos):
+def dibujar_circulo(ventana,pos):
     color = (220,20,60)
-    pygame.draw.circle(gameDisplay, color, pos, 10)
+    pygame.draw.circle(ventana, color, pos, 10)
 
-def drawLine(gameDisplay,p1,p2):
+def dibujar_linea(ventana,punto1,punto2):
     color = (220,20,60)
-    pygame.draw.line(gameDisplay, color, p1, p2,5)
+    pygame.draw.line(ventana, color, punto1, punto2,5)
     pygame.display.flip()
     
 def click_ciudad(pos):
@@ -135,7 +139,7 @@ def click_ciudad(pos):
             
     return None
 
-def mostrar_estadisticas(ruta,gameDisplay):
+def mostrar_estadisticas(ruta,ventana):
     distancia = 0
     carretera = 0
     peligro = 0
@@ -153,62 +157,59 @@ def mostrar_estadisticas(ruta,gameDisplay):
     
     font = pygame.font.Font("freesansbold.ttf", 16)  
     text = font.render("Distancia: "+str(distancia)+"km", 1, (0, 0, 0))
-    gameDisplay.blit(text, (50,470))
+    ventana.blit(text, (50,470))
     
     text = font.render("Peligrosidad: "+str(peligro)+"%", 1, (0, 0, 0))
-    gameDisplay.blit(text, (350,470))
+    ventana.blit(text, (350,470))
     
     text = font.render("Estado de la carretera: "+str(carretera)+"%", 1, (0, 0, 0))
-    gameDisplay.blit(text, (50,490))        
+    ventana.blit(text, (50,490))        
             
 def main():
     pygame.init()
-    gameDisplay = pygame.display.set_mode((750,520),0,32)
+    ventana = pygame.display.set_mode((750,520),0,32)
     pygame.display.set_caption("Algoritmo A*")
-    background_color = (255,255,255) 
-    gameDisplay.fill(background_color)
-    clock = pygame.time.Clock()
+    ventana.fill((255,255,255))
+    relog = pygame.time.relog()
     fondo = pygame.image.load(r'fondo.jpg')
-    gameDisplay.blit(fondo, (0, 0))
-    mensaje(gameDisplay)
-    image = pygame.image.load(r'mapa.jpg')
-    area = gameDisplay.blit(image, (50, 50)) 
-    done = False
+    ventana.blit(fondo, (0, 0))
+    mensaje(ventana)
+    mapa_imagen = pygame.image.load(r'mapa.jpg')
+    area_mapa = ventana.blit(mapa_imagen, (50, 50)) 
+    termino_ejecucion = False
     mostrandoRuta = False
-    while not done:
-        
+    while not termino_ejecucion:
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
-                if area.collidepoint(pos):
+                if area_mapa.collidepoint(pos):
                     inicio = (click_ciudad(pos))
                     if(inicio!=None):
                         if(mostrandoRuta):
-                            gameDisplay.blit(fondo, (0, 0))
-                            mensaje(gameDisplay)
-                            gameDisplay.blit(image, (50, 50))
+                            ventana.blit(fondo, (0, 0))
+                            mensaje(ventana)
+                            ventana.blit(mapa_imagen, (50, 50))
                             
                         ruta = algoritmo(inicio, 'Bucarest')
-                        mostrar_estadisticas(ruta,gameDisplay)
+                        mostrar_estadisticas(ruta,ventana)
                         for i in range(len(ruta)):
-                            p1 = ubicaciones.get(ruta[i])
-                            drawCircle(gameDisplay,p1)
+                            punto1 = ubicaciones.get(ruta[i])
+                            dibujar_circulo(ventana,punto1)
                             if i<len(ruta)-1:                            
-                                p2 = ubicaciones.get(ruta[i+1])
-                                drawLine(gameDisplay,p1,p2)
+                                punto2 = ubicaciones.get(ruta[i+1])
+                                dibujar_linea(ventana,punto1,punto2)
                         mostrandoRuta=True        
+
             if event.type == pygame.QUIT:
-                done = True
+                termino_ejecucion = True
 
             if event.type == pygame.KEYDOWN:
                 if(event.key==27):
-                    done = True
+                    termino_ejecucion = True
                     
         pygame.display.update()
-        clock.tick(10)             
+        relog.tick(10)             
 
     pygame.quit()
     
-
-
 if __name__ == "__main__": main()
