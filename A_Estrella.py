@@ -170,7 +170,7 @@ def main():
     ventana = pygame.display.set_mode((750,520),0,32)
     pygame.display.set_caption("Algoritmo A*")
     ventana.fill((255,255,255))
-    relog = pygame.time.relog()
+    relog = pygame.time.Clock()
     fondo = pygame.image.load(r'fondo.jpg')
     ventana.blit(fondo, (0, 0))
     mensaje(ventana)
