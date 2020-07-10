@@ -93,9 +93,9 @@ def algoritmo(inicio, fin):
 
 def costo_entre_nodos(argumentos):
     distancia = argumentos[0]
-    carretera = (argumentos[1]*220)/10
+    carretera = 220 - (argumentos[1]*220)/10
     peligro = argumentos[2]    
-    return ((2/3)*distancia - (1/3)*carretera) * peligro
+    return ((2/3)*distancia + (1/3)*carretera) * peligro
 
 def heuristica(ciudad):
     ciudades = grafo[ciudad]
